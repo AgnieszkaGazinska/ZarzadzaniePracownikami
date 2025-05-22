@@ -1,0 +1,25 @@
+@BazaPracownikowAPI_HostAddress = http://localhost:5147
+
+###Testowanie ¿¹dañ
+
+
+### Testowanie endpointu dla pracowników (GET)
+GET {{BazaPracownikowAPI_HostAddress}}/api/pracownicy
+Accept: application/json
+
+### Testowanie endpointu szczegó³ów pracownika (GET)
+GET {{BazaPracownikowAPI_HostAddress}}/api/pracownicy/{id}
+Accept: application/json
+
+### Testowanie dodawania nowego pracownika (POST) - bez danych
+POST {{BazaPracownikowAPI_HostAddress}}/api/pracownicy
+Content-Type: application/json
+{}
+
+### Testowanie aktualizacji danych pracownika (PUT) - bez danych
+PUT {{BazaPracownikowAPI_HostAddress}}/api/pracownicy/{id}
+Content-Type: application/json
+{}
+
+### Testowanie usuwania pracownika (DELETE)
+DELETE {{BazaPracownikowAPI_HostAddress}}/api/pracownicy/{id}

@@ -1,0 +1,407 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista Pracowników</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <style>
+        button {
+            margin: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 5px;
+        }
+
+            button:hover {
+                background-color: #0056b3;
+            }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px 20px;
+        }
+
+        .form-grid .full-width {
+        grid-column: span 2;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Lista Pracowników</h1>
+
+    <!-- Formularz do dodawania noweych pracowników -->
+    <h3>Dodaj Pracownika</h3>
+    <form id="dodajPracownikaForm">
+        <label for="imie">Imię:</label><br>
+        <input type="text" id="imie" name="imie" required><br><br>
+
+        <label for="nazwisko">Nazwisko:</label><br>
+        <input type="text" id="nazwisko" name="nazwisko" required><br><br>
+
+        <label for="dataUrodzenia">Data Urodzenia:</label><br>
+        <input type="date" id="dataUrodzenia" name="dataUrodzenia" required><br><br>
+
+        <label for="stanowisko">Stanowisko:</label><br>
+        <input type="text" id="stanowisko" name="stanowisko" required><br><br>
+
+        <label for="dataZatrudnienia">Data Zatrudnienia:</label><br>
+        <input type="date" id="dataZatrudnienia" name="dataZatrudnienia" required><br><br>
+
+        <label for="wynagrodzenieBrutto">Wynagrodzenie Brutto:</label><br>
+        <input type="number" id="wynagrodzenieBrutto" name="wynagrodzenieBrutto" required><br><br>
+
+        <label for="rodzajZatrudnienia">Rodzaj Zatrudnienia:</label><br>
+        <input type="text" id="rodzajZatrudnienia" name="rodzajZatrudnienia" required><br><br>
+
+        <button type="submit">Dodaj Pracownika</button>
+    </form>
+
+    <!--Wyszukiwanie pracowników-->
+    <h3>Wyszukaj Pracownika</h3>
+    <input type="text" id="searchInput" placeholder="Wpisz imię lub nazwisko">
+    <button id="searchBtn">Szukaj</button>
+    <button id="resetSearchBtn">Resetuj</button>
+
+    <!-- Edycja pracownika -->
+    <div id="editModal" class="modal" style="display:none; position:fixed; top:20%; left:30%; width:40%; background:white; padding:20px; border:1px solid #ddd; border-radius:10px;">
+        <h3>Edytuj Pracownika</h3>
+        <form id="editPracownikForm">
+            <input type="hidden" id="editId" name="editId">
+                <div class="form-grid">
+                    <div>
+                        <label for="editImie">Imię:</label>
+                        <input type="text" id="editImie" name="editImie" required>
+                    </div>
+                    <div>
+                        <label for="editNazwisko">Nazwisko:</label>
+                        <input type="text" id="editNazwisko" name="editNazwisko" required>
+                    </div>
+                    <div class="full-width">
+                        <label for="editDataUrodzenia">Data Urodzenia:</label>
+                        <input type="date" id="editDataUrodzenia" name="editDataUrodzenia" required>
+                    </div>
+                    <div>
+                        <label for="editStanowisko">Stanowisko:</label>
+                        <input type="text" id="editStanowisko" name="editStanowisko" required>
+                    </div>
+                    <div>
+                        <label for="editDataZatrudnienia">Data Zatrudnienia:</label>
+                        <input type="date" id="editDataZatrudnienia" name="editDataZatrudnienia" required>
+                    </div>
+                    <div>
+                        <label for="editWynagrodzenieBrutto">Wynagrodzenie Brutto:</label>
+                        <input type="number" id="editWynagrodzenieBrutto" name="editWynagrodzenieBrutto" required>
+                    </div>
+                    <div>
+                        <label for="editRodzajZatrudnienia">Rodzaj Zatrudnienia:</label>
+                        <input type="text" id="editRodzajZatrudnienia" name="editRodzajZatrudnienia" required>
+                    </div>
+                </div>
+                <br>
+                <button type="submit">Zapisz zmiany</button>
+                <button type="button" id="closeModal">Anuluj</button>
+                <button type="button" id="resetBtn">Resetuj</button>
+        </form>
+        
+    </div>
+
+    <br><br>
+
+    <!-- Tabela do wyświetlania pracowników -->
+    <table id="pracownicyTabela" border="1">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Imię</th>
+                <th>Nazwisko</th>
+                <th>Data Urodzenia</th>
+                <th>Stanowisko</th>
+                <th>Data Zatrudnienia</th>
+                <th>Wynagrodzenie Brutto</th>
+                <th>Rodzaj Zatrudnienia</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+
+        // Załadowanie pracowników
+        $(document).ready(function () {
+            loadPracownicy();
+
+            function loadPracownicy(query = '') {
+                const url = query
+                    ? `http://localhost:5147/api/pracownicy/search?query=${encodeURIComponent(query)}`
+                        : `http://localhost:5147/api/pracownicy`;
+                try {
+                    $.ajax({
+                        url: url,
+                        method: 'GET',
+                        success: function (data) {
+                            try {
+                                $('#pracownicyTabela tbody').empty(); // Wyczyść tabelę
+                                data.forEach(function (pracownik) {
+                                    var row = '<tr>';
+                                    row += '<td>' + pracownik.id + '</td>';
+                                    row += '<td>' + pracownik.imie + '</td>';
+                                    row += '<td>' + pracownik.nazwisko + '</td>';
+                                    var dataUrodzenia = new Date(pracownik.dataUrodzenia).toLocaleDateString('pl-PL');
+                                    row += '<td>' + dataUrodzenia + '</td>';
+                                    row += '<td>' + pracownik.stanowisko + '</td>';
+                                    var dataZatrudnienia = new Date(pracownik.dataZatrudnienia).toLocaleDateString('pl-PL');
+                                    row += '<td>' + dataZatrudnienia + '</td>';
+                                    row += '<td>' + pracownik.wynagrodzenieBrutto + '</td>';
+                                    row += '<td>' + pracownik.rodzajZatrudnienia + '</td>';
+                                    row += '<td>';
+                                    row += '<button class="editBtn" data-id="' + pracownik.id + '">Edytuj</button> ';
+                                    row += '<button class="deleteBtn" data-id="' + pracownik.id + '">Usuń</button>';
+                                    row += '</td>';
+                                    row += '</tr>';
+                                    $('#pracownicyTabela tbody').append(row);
+                                });
+                            } catch (innerError) {
+                                console.error("Błąd przetwarzania danych: ", innerError);
+                                alert("Błąd przetwarzania danych.");
+                            }
+                        },
+                        error: function (error) {
+                            alert("Wystąpił błąd podczas ładowania danych.");
+                        }
+                    });
+                } catch (e) {
+                    console.error("Błąd ładowania: ", e);
+                    alert("Nieoczekiwany błąd podczas ładowania pracowników.");
+                }
+            }
+
+            // Funkcja do dodania nowego pracownika
+            $('#dodajPracownikaForm').submit(function (e) {
+                e.preventDefault();
+                try {
+                    var pracownikData = {
+                        imie: $('#imie').val(),
+                        nazwisko: $('#nazwisko').val(),
+                        dataUrodzenia: $('#dataUrodzenia').val(),
+                        stanowisko: $('#stanowisko').val(),
+                        dataZatrudnienia: $('#dataZatrudnienia').val(),
+                        wynagrodzenieBrutto: parseFloat($('#wynagrodzenieBrutto').val()),
+                        rodzajZatrudnienia: $('#rodzajZatrudnienia').val()
+                    };
+
+                    $.ajax({
+                        url: 'http://localhost:5147/api/pracownicy',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(pracownikData),
+                        success: function (response) {
+                            loadPracownicy();
+                            alert("Pracownik dodany pomyślnie!");
+                        },
+                        error: function (error) {
+                            console.error("Błąd dodawania: ", error);
+                            alert("Wystąpił błąd podczas dodawania pracownika.");
+                        }
+                    });
+                } catch (e) {
+                    console.error("Błąd formularza: ", e);
+                    alert("Nieoczekiwany błąd formularza.");
+                }
+            });
+
+            // Funkcja do usuwania pracownika
+            $(document).on('click', '.deleteBtn', function () {
+                try {
+                    var pracownikId = $(this).data('id');
+                    $.ajax({
+                        url: `http://localhost:5147/api/pracownicy/${pracownikId}`,
+                        type: 'DELETE',
+                        success: function () {
+                            alert('Pracownik usunięty');
+                            loadPracownicy();
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Błąd usuwania: ", error);
+                            alert('Wystąpił błąd podczas usuwania pracownika.');
+                        }
+                    });
+                } catch (e) {
+                    console.error("Błąd usuwania: ", e);
+                    alert("Nieoczekiwany błąd podczas usuwania.");
+                }
+            });
+
+            // Wyszukiwanie pracownika
+            $('#searchBtn').click(function () {
+                try {
+                    const query = $('#searchInput').val();
+                    loadPracownicy(query);
+                } catch (e) {
+                    console.error("Błąd wyszukiwania: ", e);
+                    alert("Nieoczekiwany błąd podczas wyszukiwania.");
+                }
+            });
+
+            // Resetowanie wyszukiwania
+            $('#resetSearchBtn').click(function () {
+                try {
+                    $('#searchInput').val('');
+                    loadPracownicy();
+                } catch (e) {
+                    console.error("Błąd resetowania wyszukiwania: ", e);
+                    alert("Nieoczekiwany błąd podczas resetowania wyszukiwania.");
+                }
+            });
+            
+            // Resetowanie pól formularza do dodawania pracownika
+            $("#resetBtn").click(function () {
+                try {
+                    $("#dodajPracownikaForm")[0].reset();
+                } catch (e) {
+                    console.error("Błąd resetowania formularza: ", e);
+                }
+                
+            });
+
+            // Formatowanie daty
+            function formatujDate (dateString) {
+                const parts = dateString.split('.');
+                return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+
+
+
+            // Edycja pracownika
+            $(document).on('click', '.editBtn', function () {
+                try {
+                    const row = $(this).closest('tr'); // Pobierz wiersz tabeli
+                    const id = row.find('td:nth-child(1)').text().trim();
+                    console.log("ID pracownika do edycji:", id);
+                    $('#editId').val(id); 
+                    $('#editImie').val(row.find('td:nth-child(2)').text().trim());
+                    $('#editNazwisko').val(row.find('td:nth-child(3)').text().trim());
+                    $('#editDataUrodzenia').val(formatujDate(row.find('td:nth-child(4)').text()));
+                    $('#editStanowisko').val(row.find('td:nth-child(5)').text().trim());
+                    $('#editDataZatrudnienia').val(formatujDate(row.find('td:nth-child(6)').text()));
+                    $('#editWynagrodzenieBrutto').val(row.find('td:nth-child(7)').text().trim());
+                    $('#editRodzajZatrudnienia').val(row.find('td:nth-child(8)').text().trim());
+                    $("#editModal").draggable();
+                    $('#editModal').show();
+                } catch (err) {
+                    console.error("Błąd podczas otwierania formularza edycji:", err);
+                    alert("Wystąpił błąd podczas przygotowywania danych do edycji.");
+                }
+            });
+
+
+
+            // Obsługa przesyłania formularza edycji
+            $('#editPracownikForm').submit(function (e) {
+                e.preventDefault(); // zapobiega przeładowanie strony
+                try {
+                    const id = $('#editId').val();
+                    const updatedData = {
+                        id: parseInt(id),
+                        imie: $('#editImie').val(),
+                        nazwisko: $('#editNazwisko').val(),
+                        dataUrodzenia: $('#editDataUrodzenia').val(),
+                        stanowisko: $('#editStanowisko').val(),
+                        dataZatrudnienia: $('#editDataZatrudnienia').val(),
+                        wynagrodzenieBrutto: parseFloat($('#editWynagrodzenieBrutto').val()),
+                        rodzajZatrudnienia: $('#editRodzajZatrudnienia').val()
+                    };
+
+                    $.ajax({
+                        url: `http://localhost:5147/api/pracownicy/${id}`,
+                        method: 'PUT',
+                        contentType: 'application/json',
+                        data: JSON.stringify(updatedData),
+                        success: function () {
+                            alert("Pracownik zaktualizowany");
+                            $('#editModal').hide();
+                            loadPracownicy();
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Błąd API:", error);
+                            alert("Błąd podczas edycji pracownika. Szczegóły: " + error);
+                        }
+                    });
+                } catch (err) {
+                    console.error("Błąd JavaScript przy edycji:", err);
+                    alert("Wystąpił błąd podczas przetwarzania formularza.");
+                }
+            });
+
+            // Zamknięcie okna bez zmian
+            $('#closeModal').click(function () {
+                $('#editModal').hide();
+            });
+
+
+            // Przeciąganie modala
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            $('#editModal .modal-header').on('mousedown', function (e) {
+                isDragging = true;
+                offsetX = e.clientX - $('#editModal').offset().left;
+                offsetY = e.clientY - $('#editModal').offset().top;
+            });
+
+            $(document).on('mousemove', function (e) {
+                if (isDragging) {
+                    $('#editModal').css({
+                        left: e.clientX - offsetX + 'px',
+                        top: e.clientY - offsetY + 'px'
+                    });
+                }
+            });
+
+            $(document).on('mouseup', function () {
+                isDragging = false;
+            });
+        });
+    </script>
+</body>
+</html>
